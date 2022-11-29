@@ -43,9 +43,12 @@ boot_straps =
   ) %>%
   mutate(
     models = map(.x=strap_samp, ~lm(tmax~tmin, data = .x)),
-    beta = map(models, broom::tidy),
-    rsq =  map(models,broom::glance)
-  )
+    beta = map(.x=models,~pull(broom::tidy(.x),estimate)),
+    rsq =  map(.x=models,~pull(broom::glance(.x),r.squared)),
+    beta_sq = map(beta,prod)
+  ) %>%
+  select(strap_num,rsq,beta_sq)
+
 
 
 ```
