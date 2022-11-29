@@ -1,0 +1,35 @@
+---
+title: "p8105_hw6_zj2357"
+author: "Zekai Jin (zj2357)"
+date: "2022-11-29"
+output: github_document
+---
+
+First of all, we should include the libraries we are using.
+```{r init, message=FALSE}
+library(tidyverse)
+library(lubridate)
+library(forcats)
+library(ggridges)
+library(p8105.datasets)
+library(patchwork)
+knitr::opts_chunk$set(
+  message  = FALSE,
+  warning = FALSE,
+  fig.width = 8, 
+  fig.height = 6,
+  out.width = "90%"
+)
+```
+
+# Problem 1
+
+
+
+
+
+
+
+
+
+
