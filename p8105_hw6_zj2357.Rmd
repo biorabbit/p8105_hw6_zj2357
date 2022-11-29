@@ -8,11 +8,8 @@ output: github_document
 First of all, we should include the libraries we are using.
 ```{r init, message=FALSE}
 library(tidyverse)
-library(lubridate)
-library(forcats)
-library(ggridges)
 library(p8105.datasets)
-library(patchwork)
+
 knitr::opts_chunk$set(
   message  = FALSE,
   warning = FALSE,
@@ -23,8 +20,35 @@ knitr::opts_chunk$set(
 ```
 
 # Problem 1
+Downloading the dataset
+```{r}
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2017-01-01",
+    date_max = "2017-12-31") %>%
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %>%
+  select(name, id, everything())
+```
+
+```{r}
+boot_straps = 
+  tibble(
+    strap_num = 1:100,
+    strap_samp = rerun(100, sample_frac(weather_df, replace = TRUE))
+  ) %>%
+  mutate(
+    models = map(.x=strap_samp, ~lm(tmax~tmin, data = .x)),
+    beta = map(models, broom::tidy),
+    rsq =  map(models,broom::glance)
+  )
 
 
+```
 
 
 
