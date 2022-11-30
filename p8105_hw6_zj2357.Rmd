@@ -91,8 +91,25 @@ conf_int =
 conf_int
 ```
 
-
+# Problem 2
 ```{r}
+rm(list = ls())
+
+homi_df = 
+  read_csv("data/homicide-data.csv") %>%
+  mutate(
+    city_state = str_c(city, ", ", state),
+    solved = !disposition %in% c("Closed without arrest","Open/No arrest"),
+    victim_age = as.numeric(victim_age)
+  ) %>%
+  filter(
+    !city_state %in% c("Dallas, TX", "Phoenix, AZ", "Kansas City, MO", "Tulsa, AL"),
+    victim_race %in% c("Black", "White")
+  ) %>%
+  select(uid,city_state,solved,victim_race, victim_age, victim_sex) %>%
+  na.omit()
+
+
 
 ```
 
