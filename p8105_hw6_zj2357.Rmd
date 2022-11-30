@@ -130,9 +130,41 @@ logi_fit %>%
   )  %>%
   select(term,estimate,conf_low,conf_high)
 
-
-
 ```
+
+other cities
+
+
+```{r}
+logi_fit =
+  homi_df %>%
+  nest(data = c(uid,solved, victim_age,victim_race,victim_sex)) %>%
+  mutate(
+    model = map(.x = data, ~glm(solved~ victim_race+ victim_age+ victim_sex, data = .x, family = "binomial")),
+    estimate = map(.x=model, ~filter(broom::tidy(.x),term == "victim_sexMale"))
+  ) %>%
+  unnest(estimate) %>%
+  mutate(
+    conf_low = estimate-1.96*std.error,
+    conf_high = estimate+1.96*std.error
+  )  %>%
+  select(city_state,estimate,conf_low,conf_high)
+
+logi_fit
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
