@@ -10,6 +10,7 @@ First of all, we should include the libraries we are using.
 library(tidyverse)
 library(p8105.datasets)
 library(patchwork)
+library(modelr)
 
 knitr::opts_chunk$set(
   message  = FALSE,
@@ -183,18 +184,29 @@ birth_df =
     frace = factor(frace, levels = c(1,2,3,4,8,9),labels= c("white","black", "asian", "puerto rican", "other", "unknown")),
     mrace = factor(mrace, levels = c(1,2,3,4,8),labels= c("white","black", "asian", "puerto rican", "other")),
     malform = factor(malform, levels = 0:1,labels = c("absent","present"))
-  )  
+  ) %>%
+  select(bwt, everything())
   
-
-
-
 
 ```
 
 
 
+building my model
+```{r}
+my_model = step(lm(bwt ~ ., data = birth_df),direction = "both")
 
+formula(my_model)
+```
 
+plotting
+```{r}
+birth_df %>%
+  add_predictions(my_model) %>%
+  add_residuals(my_model) %>%
+  ggplot(aes(x=pred,y=resid)) +
+  geom_point()
+```
 
 
 
