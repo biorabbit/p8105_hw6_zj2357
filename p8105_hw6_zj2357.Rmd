@@ -114,7 +114,17 @@ homi_df =
 ```
 
 
+`Baltimore, MD`
+```{r}
+logi_fit = 
+  homi_df %>%
+  filter(city_state == "Baltimore, MD") %>%
+  glm(solved~ victim_race+ victim_age+ victim_sex, data = ., family = "binomial")
 
+logi_fit %>%
+  broom::tidy() 
+
+```
 
 
 
