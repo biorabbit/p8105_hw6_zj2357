@@ -122,7 +122,15 @@ logi_fit =
   glm(solved~ victim_race+ victim_age+ victim_sex, data = ., family = "binomial")
 
 logi_fit %>%
-  broom::tidy() 
+  broom::tidy() %>%
+  filter(term == "victim_sexMale") %>%
+  mutate(
+    conf_low = estimate-1.96*std.error,
+    conf_high = estimate+1.96*std.error
+  )  %>%
+  select(term,estimate,conf_low,conf_high)
+
+
 
 ```
 
