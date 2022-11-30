@@ -153,6 +153,25 @@ logi_fit =
 logi_fit
 ```
 
+plotting
+
+```{r}
+logi_fit %>%
+  mutate(
+    city_state = fct_reorder(city_state, -estimate)
+  ) %>%
+  ggplot(aes(x = estimate, y = city_state)) +
+  geom_point() +
+  geom_errorbar(aes(xmin = conf_low, xmax = conf_high)) +
+  labs(title = "Odds ratio of solved cases between male and female victims")
+```
+
+Thus, in most cities, after adjusting for race and age, cases with male victims have more odds to be unsolved.
+
+
+#
+
+
 
 
 
