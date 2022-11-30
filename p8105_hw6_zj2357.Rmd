@@ -237,14 +237,14 @@ Finally, make a plot to show the distribution of rmse of different models.
 
 ```{r}
 cv_df %>%
-  select(.id,rmse_mine,rmse_1,rmse_2) %>%
+  select(.id, rmse_mine, rmse_1, rmse_2) %>%
   pivot_longer(
     rmse_mine:rmse_2,
     names_to = "model",
     names_prefix = "rmse_",
     values_to = "rmse"
   ) %>%
-  ggplot(aes(x=rmse,y=model,fill=model)) +
+  ggplot(aes(x = rmse, y = model, fill = model)) +
   geom_density_ridges() +
   labs(title = "distribution of rmse  under  different model")
 ```
