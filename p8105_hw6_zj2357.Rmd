@@ -209,6 +209,11 @@ birth_df %>%
 ```
 
 
+other models
+```{r}
+model_1 = lm(bwt ~ blength+ gaweeks,data = birth_df)
+model_2 = lm(bwt ~ (bhead+ blength +babysex)^3,data = birth_df)
+```
 
 
 
