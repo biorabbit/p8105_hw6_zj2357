@@ -9,6 +9,7 @@ First of all, we should include the libraries we are using.
 ```{r init, message=FALSE}
 library(tidyverse)
 library(p8105.datasets)
+library(patchwork)
 
 knitr::opts_chunk$set(
   message  = FALSE,
@@ -47,8 +48,34 @@ boot_straps =
     rsq =  map(.x=models,~pull(broom::glance(.x),r.squared)),
     beta_sq = map(beta,prod)
   ) %>%
-  select(strap_num,rsq,beta_sq)
+  select(strap_num,rsq,beta_sq) %>%
+  mutate(
+      rsq = as.numeric(rsq),
+      beta_sq = as.numeric(beta_sq)
+  )
+```
 
+plotting
+```{r}
+rsq_plot = 
+  boot_straps %>%
+  ggplot(aes(x=rsq)) +
+  geom_density() +
+  xlab("x square")
+
+beta_plot = 
+  boot_straps %>%
+  ggplot(aes(x=beta_sq)) +
+  geom_density() +
+  xlab("beta_0 times beta_1 ")
+
+beta_plot + rsq_plot
+
+
+```
+
+CI
+```{r}
 conf_int =
   boot_straps %>%
   pivot_longer(
@@ -56,7 +83,6 @@ conf_int =
     names_to = "variable",
     values_to = "value"
   ) %>%
-  mutate(value = as.numeric(value)) %>%
   group_by(variable) %>%
   summarise(
     lower_CI = quantile(value,0.025),
@@ -66,6 +92,9 @@ conf_int
 ```
 
 
+```{r}
+
+```
 
 
 
