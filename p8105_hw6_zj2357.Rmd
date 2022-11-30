@@ -11,7 +11,7 @@ library(tidyverse)
 library(p8105.datasets)
 library(patchwork)
 library(modelr)
-library(mgcv)
+library(ggridges)
 
 knitr::opts_chunk$set(
   message  = FALSE,
@@ -195,19 +195,20 @@ birth_df =
 
 building my model
 ```{r}
-my_model = step(lm(bwt ~ ., data = birth_df),direction = "both")
+model_mine = step(lm(bwt ~ ., data = birth_df),direction = "both",trace = 0)
 
-my_formula=formula(my_model)
-my_formula
+formula_mine=formula(model_mine)
+formula_mine
 ```
 
 plotting
 ```{r}
 birth_df %>%
-  add_predictions(my_model) %>%
-  add_residuals(my_model) %>%
+  add_predictions(model_mine) %>%
+  add_residuals(model_mine) %>%
   ggplot(aes(x=pred,y=resid)) +
-  geom_point()
+  geom_point() +
+  labs(title = "residule vs predicted outcomes")
 ```
 
 
@@ -229,20 +230,33 @@ cv_df =
     test = map(test, as_tibble)
   ) %>%
   mutate(
-    my_mod = map(train, ~lm(my_formula,data = .x)),
+    mod_mine = map(train, ~lm(formula_mine,data = .x)),
     mod_1 = map(train, ~lm(bwt ~ blength+ gaweeks,data = .x)),
     mod_2 = map(train, ~lm(bwt ~ (bhead+ blength +babysex)^3,data = .x))
   ) %>%
   mutate(
-    my_rmse = map2_dbl(my_mod, test, ~rmse(model=.x,data=.y)),
+    rmse_mine = map2_dbl(mod_mine, test, ~rmse(model=.x,data=.y)),
     rmse_1 = map2_dbl(mod_1, test, ~rmse(model=.x,data=.y)),
     rmse_2 = map2_dbl(mod_2, test, ~rmse(model=.x,data=.y)),
   )
 
-
-
 ```
 
+ploting
+
+```{r}
+cv_df %>%
+  select(.id,rmse_mine,rmse_1,rmse_2) %>%
+  pivot_longer(
+    rmse_mine:rmse_2,
+    names_to = "model",
+    names_prefix = "rmse_",
+    values_to = "rmse"
+  ) %>%
+  ggplot(aes(x=rmse,y=model,fill=model)) +
+  geom_density_ridges() +
+  labs(title = "distribution of rmse  under  different model")
+```
 
 
 
