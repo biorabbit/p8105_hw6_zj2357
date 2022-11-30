@@ -38,7 +38,7 @@ weather_df =
   select(name, id, everything())
 ```
 Bootstrap the 5000 samples and calculate the $\hat{r}^2$, $log(\beta_0\times\beta_1)$
-```{r}
+```{r, cache=TRUE}
 boot_straps = 
   tibble(
     strap_num = 1:5000,
@@ -48,12 +48,12 @@ boot_straps =
     models = map(.x = strap_samp, ~lm(tmax ~ tmin, data = .x)),
     beta = map(.x = models, ~pull(broom::tidy(.x), estimate)),
     rsq =  map(.x = models, ~pull(broom::glance(.x), r.squared)),
-    beta_log = map(beta, prod)
+    beta_mult = map(beta, prod)
   ) %>%
   select(strap_num,rsq,beta_log) %>%
   mutate(
       rsq = as.numeric(rsq),
-      beta_log = as.numeric(beta_log)
+      beta_log = log(as.numeric(beta_mult))
   )
 ```
 
@@ -61,22 +61,21 @@ plot the distribution of $\hat{r}^2$ and $log(\beta_0\times\beta_1)$.
 ```{r}
 rsq_plot = 
   boot_straps %>%
-  ggplot(aes(x=rsq)) +
+  ggplot(aes(x = rsq)) +
   geom_density() +
-  xlab("x square")
+  xlab("x square")+
+  labs(title = "distribution of r_squred and log beta")
 
 beta_plot = 
   boot_straps %>%
-  ggplot(aes(x=beta_log)) +
+  ggplot(aes(x = beta_log)) +
   geom_density() +
   xlab("beta_0 times beta_1 ")
 
-beta_plot + rsq_plot
-
-
+beta_plot + rsq_plot 
 ```
 
-CI
+The following code calculates the Confidence Interval (CI) for the two values based on normal distribution.
 ```{r}
 conf_int =
   boot_straps %>%
@@ -90,6 +89,7 @@ conf_int =
     lower_CI = quantile(value,0.025),
     higher_CI = quantile(value,0.975)
   )
+
 conf_int
 ```
 
@@ -110,9 +110,6 @@ homi_df =
   ) %>%
   select(uid,city_state,solved,victim_race, victim_age, victim_sex) %>%
   na.omit()
-
-
-
 ```
 
 
