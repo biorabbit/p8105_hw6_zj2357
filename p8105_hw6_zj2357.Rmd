@@ -94,6 +94,7 @@ conf_int
 ```
 
 # Problem 2
+Download and clean the homicide dataset.
 ```{r}
 rm(list = ls())
 
@@ -112,54 +113,54 @@ homi_df =
   na.omit()
 ```
 
+Do the logistic regression on `Baltimore, MD`.
 
-`Baltimore, MD`
 ```{r}
 logi_fit = 
   homi_df %>%
   filter(city_state == "Baltimore, MD") %>%
-  glm(solved~ victim_race+ victim_age+ victim_sex, data = ., family = "binomial")
+  glm(solved~ victim_race + victim_age + victim_sex, data = ., family = "binomial")
 
 logi_fit %>%
   broom::tidy() %>%
   filter(term == "victim_sexMale") %>%
   mutate(
-    conf_low = estimate-1.96*std.error,
-    conf_high = estimate+1.96*std.error
+    odds_ratio = exp(estimate),
+    conf_low = exp(estimate  - 1.96 * std.error),
+    conf_high = exp(estimate + 1.96 * std.error)
   )  %>%
-  select(term,estimate,conf_low,conf_high)
-
+  select(term, odds_ratio, conf_low, conf_high)
 ```
 
-other cities
-
+Iterate over other cities with logistic regression.
 
 ```{r}
 logi_fit =
   homi_df %>%
-  nest(data = c(uid,solved, victim_age,victim_race,victim_sex)) %>%
+  nest(data = c(uid, solved, victim_age, victim_race, victim_sex)) %>%
   mutate(
-    model = map(.x = data, ~glm(solved~ victim_race+ victim_age+ victim_sex, data = .x, family = "binomial")),
-    estimate = map(.x=model, ~filter(broom::tidy(.x),term == "victim_sexMale"))
+    model = map(.x = data, ~glm(solved ~ victim_race + victim_age + victim_sex, data = .x, family = "binomial")),
+    estimate = map(.x  = model, ~filter(broom::tidy(.x), term == "victim_sexMale"))
   ) %>%
   unnest(estimate) %>%
   mutate(
-    conf_low = estimate-1.96*std.error,
-    conf_high = estimate+1.96*std.error
+    odds_ratio = exp(estimate),
+    conf_low = exp(estimate  - 1.96 * std.error),
+    conf_high = exp(estimate + 1.96 * std.error)
   )  %>%
-  select(city_state,estimate,conf_low,conf_high)
+  select(term, odds_ratio, conf_low, conf_high)
 
 logi_fit
 ```
 
-plotting
+
 
 ```{r}
 logi_fit %>%
   mutate(
-    city_state = fct_reorder(city_state, -estimate)
+    city_state = fct_reorder(city_state, -odds_ratio)
   ) %>%
-  ggplot(aes(x = estimate, y = city_state)) +
+  ggplot(aes(x = odds_ratio, y = city_state)) +
   geom_point() +
   geom_errorbar(aes(xmin = conf_low, xmax = conf_high)) +
   labs(title = "Odds ratio of solved cases between male and female victims")
