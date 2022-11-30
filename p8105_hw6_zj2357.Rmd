@@ -50,11 +50,11 @@ boot_straps =
     rsq =  map(.x = models, ~pull(broom::glance(.x), r.squared)),
     beta_mult = map(beta, prod)
   ) %>%
-  select(strap_num,rsq,beta_log) %>%
   mutate(
       rsq = as.numeric(rsq),
       beta_log = log(as.numeric(beta_mult))
-  )
+  ) %>%
+  select(strap_num,rsq,beta_log) 
 ```
 
 plot the distribution of $\hat{r}^2$ and $log(\beta_0\times\beta_1)$.
@@ -148,13 +148,13 @@ logi_fit =
     conf_low = exp(estimate  - 1.96 * std.error),
     conf_high = exp(estimate + 1.96 * std.error)
   )  %>%
-  select(term, odds_ratio, conf_low, conf_high)
+  select(city_state, odds_ratio, conf_low, conf_high)
 
 logi_fit
 ```
 
 
-
+Finally, plot the odds ratio between cities.
 ```{r}
 logi_fit %>%
   mutate(
