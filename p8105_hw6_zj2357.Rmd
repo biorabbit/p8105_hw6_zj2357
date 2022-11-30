@@ -37,27 +37,27 @@ weather_df =
     tmax = tmax / 10) %>%
   select(name, id, everything())
 ```
-
+Bootstrap the 5000 samples and calculate the $\hat{r}^2$, $log(\beta_0\times\beta_1)$
 ```{r}
 boot_straps = 
   tibble(
-    strap_num = 1:100,
-    strap_samp = rerun(100, sample_frac(weather_df, replace = TRUE))
+    strap_num = 1:5000,
+    strap_samp = rerun(5000, sample_frac(weather_df, replace = TRUE))
   ) %>%
   mutate(
-    models = map(.x=strap_samp, ~lm(tmax~tmin, data = .x)),
-    beta = map(.x=models,~pull(broom::tidy(.x),estimate)),
-    rsq =  map(.x=models,~pull(broom::glance(.x),r.squared)),
-    beta_sq = map(beta,prod)
+    models = map(.x = strap_samp, ~lm(tmax ~ tmin, data = .x)),
+    beta = map(.x = models, ~pull(broom::tidy(.x), estimate)),
+    rsq =  map(.x = models, ~pull(broom::glance(.x), r.squared)),
+    beta_log = map(beta, prod)
   ) %>%
-  select(strap_num,rsq,beta_sq) %>%
+  select(strap_num,rsq,beta_log) %>%
   mutate(
       rsq = as.numeric(rsq),
-      beta_sq = as.numeric(beta_sq)
+      beta_log = as.numeric(beta_log)
   )
 ```
 
-plotting
+plot the distribution of $\hat{r}^2$ and $log(\beta_0\times\beta_1)$.
 ```{r}
 rsq_plot = 
   boot_straps %>%
@@ -67,7 +67,7 @@ rsq_plot =
 
 beta_plot = 
   boot_straps %>%
-  ggplot(aes(x=beta_sq)) +
+  ggplot(aes(x=beta_log)) +
   geom_density() +
   xlab("beta_0 times beta_1 ")
 
@@ -81,7 +81,7 @@ CI
 conf_int =
   boot_straps %>%
   pivot_longer(
-    rsq:beta_sq,
+    rsq:beta_log,
     names_to = "variable",
     values_to = "value"
   ) %>%
